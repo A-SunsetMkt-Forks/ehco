@@ -10,9 +10,7 @@ import (
 	"net/http"
 	"strings"
 	"syscall/js"
-	"time"
 
-	"github.com/Ehco1996/ehco/pkg/buffer"
 	"github.com/gobwas/ws"
 	"github.com/gobwas/ws/wsutil"
 )
@@ -20,11 +18,10 @@ import (
 type wsConn struct {
 	conn     net.Conn
 	isServer bool
-	buf      []byte
 }
 
 func NewWSConn(conn net.Conn, isServer bool) *wsConn {
-	return &wsConn{conn: conn, isServer: isServer, buf: buffer.BufferPool.Get()}
+	return &wsConn{conn: conn, isServer: isServer}
 }
 
 func (c *wsConn) Read(b []byte) (n int, err error) {
@@ -32,11 +29,8 @@ func (c *wsConn) Read(b []byte) (n int, err error) {
 	if err != nil {
 		return 0, err
 	}
-	if header.Length > int64(cap(c.buf)) {
-
-		c.buf = make([]byte, header.Length)
-	}
-	payload := c.buf[:header.Length]
+	buf := make([]byte, header.Length)
+	payload := buf[:header.Length]
 	_, err = io.ReadFull(c.conn, payload)
 	if err != nil {
 		return 0, err
@@ -64,28 +58,7 @@ func (c *wsConn) Write(b []byte) (n int, err error) {
 }
 
 func (c *wsConn) Close() error {
-	defer buffer.BufferPool.Put(c.buf)
 	return c.conn.Close()
-}
-
-func (c *wsConn) LocalAddr() net.Addr {
-	return c.conn.LocalAddr()
-}
-
-func (c *wsConn) RemoteAddr() net.Addr {
-	return c.conn.RemoteAddr()
-}
-
-func (c *wsConn) SetDeadline(t time.Time) error {
-	return c.conn.SetDeadline(t)
-}
-
-func (c *wsConn) SetReadDeadline(t time.Time) error {
-	return c.conn.SetReadDeadline(t)
-}
-
-func (c *wsConn) SetWriteDeadline(t time.Time) error {
-	return c.conn.SetWriteDeadline(t)
 }
 
 func HandleRequest(w http.ResponseWriter, req *http.Request) {
@@ -98,6 +71,8 @@ func HandleRequest(w http.ResponseWriter, req *http.Request) {
 		println("err,", err.Error())
 	}
 	io.Copy(NewWSConn(wsc, false), NewWSConn(rc, true))
+	wsc.Close()
+	rc.Close()
 }
 
 func main() {
