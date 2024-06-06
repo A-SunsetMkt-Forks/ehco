@@ -13,7 +13,6 @@ import (
 	"github.com/Ehco1996/ehco/internal/web"
 	"github.com/Ehco1996/ehco/pkg/buffer"
 	"github.com/Ehco1996/ehco/pkg/log"
-	"github.com/Ehco1996/ehco/pkg/xray"
 	"github.com/getsentry/sentry-go"
 )
 
@@ -125,13 +124,4 @@ func MustStartComponents(mainCtx context.Context, cfg *config.Config) {
 		}()
 	}
 
-	if cfg.NeedStartXrayServer() {
-		xrayS := xray.NewXrayServer(cfg)
-		if err := xrayS.Setup(); err != nil {
-			cliLogger.Fatalf("Setup XrayServer meet err=%v", err)
-		}
-		if err := xrayS.Start(mainCtx); err != nil {
-			cliLogger.Fatalf("Start XrayServer meet err=%v", err)
-		}
-	}
 }

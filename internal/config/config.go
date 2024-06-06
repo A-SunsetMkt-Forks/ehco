@@ -10,7 +10,6 @@ import (
 
 	"github.com/Ehco1996/ehco/internal/relay/conf"
 	"github.com/Ehco1996/ehco/pkg/sub"
-	xConf "github.com/xtls/xray-core/infra/conf"
 	"go.uber.org/zap"
 )
 
@@ -31,9 +30,8 @@ type Config struct {
 	RelaySyncURL      string         `json:"relay_sync_url,omitempty"`
 	RelaySyncInterval int            `json:"relay_sync_interval,omitempty"`
 
-	SubConfigs          []*SubConfig  `json:"sub_configs,omitempty"`
-	XRayConfig          *xConf.Config `json:"xray_config,omitempty"`
-	SyncTrafficEndPoint string        `json:"sync_traffic_endpoint,omitempty"`
+	SubConfigs          []*SubConfig `json:"sub_configs,omitempty"`
+	SyncTrafficEndPoint string       `json:"sync_traffic_endpoint,omitempty"`
 
 	lastLoadTime time.Time
 	l            *zap.SugaredLogger
@@ -131,10 +129,6 @@ func (c *Config) Adjust() error {
 
 func (c *Config) NeedStartWebServer() bool {
 	return c.WebPort != 0
-}
-
-func (c *Config) NeedStartXrayServer() bool {
-	return c.XRayConfig != nil
 }
 
 func (c *Config) NeedStartRelayServer() bool {

@@ -45,5 +45,8 @@ build-arm:
 build-linux-amd64:
 	GOARCH=amd64 GOOS=linux ${GOBUILD} -o $(BINDIR)/$(NAME)_amd64 cmd/ehco/main.go
 
+build-wasm:
+	GOARCH=wasm GOOS=js ${GOBUILD} -o misc/wasm/ehco.wasm cmd/wasm/main.go
+
 tidy:
 	go mod tidy

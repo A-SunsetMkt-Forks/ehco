@@ -5,10 +5,7 @@ import (
 	"errors"
 	"net"
 	"net/http"
-	"os"
-	"os/signal"
 	"sync"
-	"syscall"
 	"time"
 
 	"github.com/Ehco1996/ehco/internal/cmgr"
@@ -109,7 +106,6 @@ func (s *Server) TriggerReload() {
 }
 
 func (s *Server) WatchAndReload(ctx context.Context) {
-	go s.TriggerReloadBySignal(ctx)
 	go s.triggerReloadByTicker(ctx)
 
 	for {
@@ -136,21 +132,6 @@ func (s *Server) triggerReloadByTicker(ctx context.Context) {
 				s.l.Warn("Trigger Reloading Relay Conf By ticker! ")
 				s.TriggerReload()
 			}
-		}
-	}
-}
-
-func (s *Server) TriggerReloadBySignal(ctx context.Context) {
-	// listen syscall.SIGHUP to trigger reload
-	sigHubCH := make(chan os.Signal, 1)
-	signal.Notify(sigHubCH, syscall.SIGHUP)
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		case <-sigHubCH:
-			s.l.Warn("Trigger Reloading Relay Conf By HUP Signal! ")
-			s.TriggerReload()
 		}
 	}
 }
